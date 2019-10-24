@@ -1,1 +1,1 @@
-export const GET_FUNDS = '/GET_FUNDS';
+export const UPDATE_STOCKS = '/app/UPDATE_STOCKS';

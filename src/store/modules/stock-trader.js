@@ -6,7 +6,7 @@ const state = {
 }
 
 const getters = {
-    [types.GET_FUNDS]: state => {
+    getFunds: state => {
         return numeral(state.funds).format("$0,0.00");
     }
 }
@@ -16,7 +16,9 @@ const actions = {
 }
 
 const mutations = {
-
+    [types.UPDATE_STOCKS]: state => {
+        
+    }
 }
 
 export default {

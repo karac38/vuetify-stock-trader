@@ -22,12 +22,11 @@
         </v-list-item>
       </v-list>
     </v-menu>
-    <v-chip class="ma-2" label outlined large>Funds: {{currentFunds}}</v-chip>
+    <v-chip class="ma-2" label outlined large>Funds: {{getFunds}}</v-chip>
   </v-app-bar>
 </template>
 <script>
 import { mapGetters } from "vuex";
-import * as types from "../store/types.js";
 export default {
   data() {
     return {
@@ -35,9 +34,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      currentFunds: types.GET_FUNDS
-    })
+    ...mapGetters(["getFunds"])
   }
 };
 </script>

@@ -13,7 +13,7 @@
           <hr>
           <v-card-text>
             <div class="headline font-weight-bold">
-              Your Funds: {{currentFunds}}
+              Your Funds: {{getFunds}}
             </div>
           </v-card-text>
         </v-card>
@@ -25,15 +25,12 @@
 <script>
 // @ is an alias to /src
 import { mapGetters } from 'vuex'
-import * as types from '../store/types.js'
 
 export default {
   name: "home",
   components: {},
    computed:{
-      ...mapGetters({
-        currentFunds: types.GET_FUNDS
-      })
+    ...mapGetters(["getFunds"])
   }
 };
 </script>
