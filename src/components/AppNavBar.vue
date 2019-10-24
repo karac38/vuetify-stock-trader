@@ -2,11 +2,11 @@
   <v-app-bar app class="grey lighten-3">
     <router-link
       to="/"
-      tag="v-toolbar-title"
+      tag="span"
       :style="{ cursor: 'pointer'}"
       class="headline text-uppercase"
     >Stock Trader</router-link>
-    <v-btn text tile class="mx-3" router >Portfolio</v-btn>
+    <v-btn text tile class="mx-3" router to="/portfolio">Portfolio</v-btn>
     <v-btn text tile router to="/stocks">Stocks</v-btn>
     <v-spacer></v-spacer>
     <v-btn text>End Day</v-btn>
