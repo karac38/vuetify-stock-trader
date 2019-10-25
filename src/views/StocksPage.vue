@@ -1,7 +1,15 @@
 <template>
   <v-container>
     <v-row>
-      <app-stock :stock="stock" :type="'buy'" v-for="stock in $store.state.stocks" :key="stock.id"></app-stock>
+      <app-stock 
+      :stock="stock" 
+      :type="'buy'" 
+      v-for="stock in $store.state.stock.stocks" :key="stock.id"></app-stock>
+    </v-row>
+    <v-row>
+      <v-col>
+
+      </v-col>
     </v-row>
   </v-container>
 </template>

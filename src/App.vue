@@ -3,7 +3,7 @@
 <app-nav-bar></app-nav-bar>
 
     <v-content>
-      <router-view class="mx-8 mb-4"></router-view>
+      <router-view></router-view>
     </v-content>
   </v-app>
 </template>

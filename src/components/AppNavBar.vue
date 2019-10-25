@@ -1,5 +1,9 @@
 <template>
   <v-app-bar app class="grey lighten-3">
+    <v-snackbar v-model="snackbar" :timeout="2000" :color="color" top>
+      {{ snackBarText }}
+      <v-btn color="white" text @click="snackbar = false">Close</v-btn>
+    </v-snackbar>
     <router-link
       to="/"
       tag="span"
@@ -9,7 +13,7 @@
     <v-btn text tile class="mx-3" router to="/portfolio">Portfolio</v-btn>
     <v-btn text tile router to="/stocks">Stocks</v-btn>
     <v-spacer></v-spacer>
-    <v-btn text>End Day</v-btn>
+    <v-btn text @click="endDay">End Day</v-btn>
     <v-menu offset-y>
       <template v-slot:activator="{ on }">
         <v-btn text v-on="on">
@@ -26,15 +30,41 @@
   </v-app-bar>
 </template>
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapMutations } from "vuex";
+import * as types from "../store/types";
+import { EventBus } from "../eventbus";
 export default {
   data() {
     return {
-      menuDropDown: ["Save Data", "Load Data"]
+      menuDropDown: ["Save Data", "Load Data"],
+      snackbar: false,
+      snackBarText: "",
+      color: ""
     };
   },
   computed: {
     ...mapGetters(["getFunds"])
+  },
+  methods: {
+    ...mapMutations({
+      endDay: types.END_DAY
+    })
+  },
+  mounted() {
+    EventBus.$on("success", text => {
+      this.snackbar = true;
+      this.snackBarText = text;
+      this.color = "success";
+    });
+     EventBus.$on("error", text => {
+      this.snackbar = true;
+      this.snackBarText = text;
+      this.color = "error";
+    });
+  },
+  beforeDestroy() {
+    EventBus.$off("success");
+    EventBus.$off("error");
   }
 };
 </script>
