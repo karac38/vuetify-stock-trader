@@ -13,7 +13,7 @@
     <v-btn text tile class="mx-3" router to="/portfolio">Portfolio</v-btn>
     <v-btn text tile router to="/stocks">Stocks</v-btn>
     <v-spacer></v-spacer>
-    <v-btn text @click="endDay">End Day</v-btn>
+    <v-btn text @click="endDay" :disabled="loading">End Day</v-btn>
     <v-menu offset-y>
       <template v-slot:activator="{ on }">
         <v-btn text v-on="on">
@@ -21,7 +21,7 @@
         </v-btn>
       </template>
       <v-list>
-        <v-list-item v-for="(item, index) in menuDropDown" :key="index">
+        <v-list-item v-for="(item, index) in menuDropDown" :key="index" @click="doAction(item)">
           <v-list-item-title>{{ item }}</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -30,8 +30,7 @@
   </v-app-bar>
 </template>
 <script>
-import { mapGetters, mapMutations } from "vuex";
-import * as types from "../store/types";
+import { mapGetters, mapActions } from "vuex";
 import { EventBus } from "../eventbus";
 export default {
   data() {
@@ -43,12 +42,30 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getFunds"])
+    ...mapGetters(["getFunds"]),
+    loading() {
+      return this.$store.state.stock.loading;
+    }
   },
   methods: {
-    ...mapMutations({
-      endDay: types.END_DAY
-    })
+    ...mapActions(["endDayAsync"]),
+    endDay() {
+      EventBus.$emit("showOverlay");
+      this.endDayAsync().then(() => {
+        EventBus.$emit("hideOverlay");
+      });
+    },
+    doAction(item) {
+      if (item == "Save Data") {
+        this.snackbar = true;
+        this.snackBarText = "Save Data called";
+        this.color = "warning";
+      } else if (item == "Load Data") {
+        this.snackbar = true;
+        this.snackBarText = "Load Data called";
+        this.color = "warning";
+      }
+    }
   },
   mounted() {
     EventBus.$on("success", text => {
@@ -56,7 +73,7 @@ export default {
       this.snackBarText = text;
       this.color = "success";
     });
-     EventBus.$on("error", text => {
+    EventBus.$on("error", text => {
       this.snackbar = true;
       this.snackBarText = text;
       this.color = "error";

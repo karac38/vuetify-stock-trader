@@ -10,23 +10,33 @@
       </v-card-subtitle>
       <v-card-actions>
         <v-container>
-          <v-row>
-            <v-col cols="8" sm="10" class="my-n3">
-              <v-text-field v-model="count" label="Quantity" :color="mainColor" type="number"></v-text-field>
-            </v-col>
-            <v-col cols="4" sm="2" class="px-1" align="center">
-              <v-btn
-                v-if="isBuyType"
-                @click="buyStocks(userStock)"
-                :color="mainColor + ' white--text'"
-              >Buy</v-btn>
-              <v-btn
-                v-else-if="isSellType"
-                @click="sellStocks(userStock)"
-                :color="mainColor + ' white--text'"
-              >Sell</v-btn>
-            </v-col>
-          </v-row>
+          <v-form v-model="valid" lazy-validation ref="stockForm">
+            <v-row>
+              <v-col cols="8" sm="10" class="my-n3">
+                <v-text-field
+                  v-model="count"
+                  label="Quantity"
+                  :color="mainColor"
+                  type="number"
+                  :rules="[rules.required]"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="4" sm="2" class="px-1" align="center">
+                <v-btn
+                  v-if="isBuyType"
+                  @click="buyStocks(userStock)"
+                  :color="mainColor + ' white--text'"
+                  :disabled="!valid"
+                >Buy</v-btn>
+                <v-btn
+                  v-else-if="isSellType"
+                  @click="sellStocks(userStock)"
+                  :color="mainColor + ' white--text'"
+                  :disabled="!valid"
+                >Sell</v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
         </v-container>
       </v-card-actions>
     </v-card>
@@ -41,7 +51,11 @@ export default {
   data() {
     return {
       count: "",
-      currectStockPrice: ""
+      currectStockPrice: "",
+      rules: {
+        required: value => !!value || "Required."
+      },
+      valid: true
     };
   },
   computed: {
@@ -65,6 +79,7 @@ export default {
   methods: {
     ...mapActions(["buyStocksAsync", "sellStocksAsync", "getStockPriceAsync"]),
     buyStocks() {
+      if (!this.isValid()) return;
       this.buyStocksAsync(this.userStock)
         .then(() => {
           EventBus.$emit(
@@ -77,6 +92,7 @@ export default {
         });
     },
     sellStocks() {
+      if (!this.isValid()) return;
       this.sellStocksAsync(this.userStock)
         .then(() => {
           EventBus.$emit(
@@ -87,6 +103,9 @@ export default {
         .catch(reason => {
           EventBus.$emit("error", `${reason}!`);
         });
+    },
+    isValid() {
+      return this.$refs.stockForm.validate();
     },
     getStockPrice() {
       this.getStockPriceAsync(this.userStock)

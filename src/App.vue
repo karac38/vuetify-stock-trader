@@ -1,22 +1,61 @@
 <template>
   <v-app>
-<app-nav-bar></app-nav-bar>
-
+    <app-nav-bar></app-nav-bar>
     <v-content>
-      <router-view></router-view>
+      <v-fade-transition mode="out-in">
+        <router-view></router-view>
+      </v-fade-transition>
     </v-content>
+    <v-overlay :value="overlay">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
   </v-app>
 </template>
 
 <script>
-import AppNavBar from './components/AppNavBar'
+import AppNavBar from "./components/AppNavBar";
+import { mapActions, mapMutations } from "vuex";
+import * as types from "./store/types";
+import { EventBus } from "./eventbus";
+
 export default {
-  name: 'App',
+  name: "App",
   components: {
     appNavBar: AppNavBar
   },
+  methods: {
+    ...mapActions(["getStocksAsync"]),
+    ...mapMutations({
+      finishLoading: types.SET_LOADING
+    })
+  },
   data: () => ({
-    //
+    overlay: false
   }),
+  watch: {
+    overlay(val) {
+      this.overlay = val;
+    }
+  },
+  mounted() {
+    if (
+      !this.$store.state.stock.stocks ||
+      this.$store.state.stock.stocks.length == 0
+    ) {
+      this.getStocksAsync().then(() => {
+        this.finishLoading();
+      });
+    }
+    EventBus.$on("showOverlay", () => {
+      this.overlay = true;
+    });
+    EventBus.$on("hideOverlay", () => {
+      this.overlay = false;
+    });
+  },
+  beforeDestroy() {
+    EventBus.$off("showOverlay");
+    EventBus.$off("hideOverlay");
+  }
 };
 </script>

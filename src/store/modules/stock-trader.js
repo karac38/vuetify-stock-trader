@@ -1,30 +1,11 @@
 import * as types from '../types'
 import numeral from 'numeral'
 import { utilities } from '../utilities'
+//import db from '../db'
 const state = {
   funds: 10000,
-  stocks: [
-    {
-      id: utilities.uuidv4(),
-      name: "BMW",
-      price: 110
-    },
-    {
-      id: utilities.uuidv4(),
-      name: "Google",
-      price: 200
-    },
-    {
-      id: utilities.uuidv4(),
-      name: "Twitter",
-      price: 110
-    },
-    {
-      id: utilities.uuidv4(),
-      name: "Apple",
-      price: 110
-    }
-  ],
+  stocks: [],
+  loading: true,
   userStocks: []
 }
 
@@ -55,18 +36,87 @@ const actions = {
       }
       resolve(context.state.stocks[stockIndex].price);
     })
-  }
+  },
+  getStocksAsync: context => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        context.state.stocks.push({
+          id: utilities.uuidv4(),
+          name: "BMW",
+          price: 110
+        });
+        context.state.stocks.push({
+          id: utilities.uuidv4(),
+          name: "Google",
+          price: 200
+        });
+
+        context.state.stocks.push({
+          id: utilities.uuidv4(),
+          name: "Twitter",
+          price: 110
+        });
+        context.state.stocks.push({
+          id: utilities.uuidv4(),
+          name: "Apple",
+          price: 290
+        });
+        resolve();
+      }, 3000);
+    });
+
+    // db.collection("stocks").onSnapshot(res => {
+    //   const changes = res.docChanges();
+    //   changes.forEach(change => {
+    //     if (change.type === "added") {
+    //       context.state.stocks.push({
+    //         ...change.doc.data(),
+    //         id: change.doc.id
+    //       });
+    //     } else if (change.type === "removed") {
+    //       var index = context.state.stocks.indexOf((x) => x.id == change.doc.id);
+    //       context.state.stocks.splice(index, 1);
+    //     }
+    //   });
+    // });
+  },
+  endDayAsync: context => {
+    return new Promise((resolve) => {
+      let count = context.state.stocks.length;
+      context.state.stocks.forEach(element => {
+        setTimeout(() => {
+          let rnd = utilities.getRandomArbitrary(-10, 10);
+          if (element.price + rnd < 0)
+            element.price = 0;
+          element.price += rnd;
+          count--;
+          if (count == 0) {
+            resolve();
+          }
+        }, 1000);
+        // db.collection("stocks")
+        // .doc(this.element.id)
+        // .update(element).then(()=>{count--;})
+      });
+    })
+  },
+  // loadUserStocks: context => {
+  //   return new Promise((resolve) => {
+  //     db.collection("userData").get().then( snapshot => {
+  //       context.state.userStocks = snapshot;
+        
+  //       snapshot.forEach(doc => {
+  //         console.log(doc.id, '=>', doc.data());
+  //       })
+  //     })
+  //   }) 
+  // },
+  // saveUserStocks: context => {
+
+  // }
 }
 
 const mutations = {
-  [types.END_DAY]: state => {
-    state.stocks.forEach(element => {
-      let rnd = utilities.getRandomArbitrary(-10, 10);
-      if (element.price + rnd < 0)
-        element.price = 0;
-      element.price += rnd;
-    });
-  },
   [types.BUY_STOCK]: (state, payload) => {
     if (state.funds - payload.price * payload.count < 0) {
       throw "Not enough funds";
@@ -90,11 +140,14 @@ const mutations = {
 
     state.funds += payload.count * state.stocks[stockIndex].price;
     state.userStocks.splice(userStockIndex, 1);
+  },
+  [types.SET_LOADING]: state => {
+    state.loading = false;
   }
 }
 
 export default {
-  state,
+  state: () => (state),
   getters,
   actions,
   mutations
