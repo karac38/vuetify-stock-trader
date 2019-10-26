@@ -12,12 +12,7 @@
       </v-col>
     </v-row>
     <v-row v-else>
-      <app-stock
-        :stock="stock"
-        :type="'sell'"
-        v-for="stock in $store.state.stock.userStocks"
-        :key="stock.id"
-      ></app-stock>
+      <app-stock :stock="stock" :type="'sell'" v-for="stock in userStocks" :key="stock.id"></app-stock>
     </v-row>
   </v-container>
 </template>
@@ -28,8 +23,13 @@ import StockVue from "../components/Stock.vue";
 export default {
   computed: {
     ...mapGetters(["getFunds"]),
-    hasStocks(){
-      return this.$store.state.stock.userStocks.length > 0;
+    hasStocks() {
+      if (this.$store.state.stock.userDataLoading) 
+        return false;
+      return this.$store.state.stock.userData.stocks.length > 0;
+    },
+    userStocks(){
+      return this.$store.state.stock.userData.stocks
     }
   },
   components: {

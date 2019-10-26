@@ -24,9 +24,10 @@ export default {
     appNavBar: AppNavBar
   },
   methods: {
-    ...mapActions(["getStocksAsync"]),
+    ...mapActions(["getStocksAsync", "getUserStocks"]),
     ...mapMutations({
-      finishLoading: types.SET_LOADING
+      finishLoading: types.SET_LOADING,
+      finishUserLoading: types.FINISH_USER_LOADING
     })
   },
   data: () => ({
@@ -46,6 +47,15 @@ export default {
         this.finishLoading();
       });
     }
+    if (
+      !this.$store.state.stock.userStocks ||
+      this.$store.state.stock.userStocks.stocks.length == 0
+    ){
+      this.getUserStocks().then(()=>{
+        this.finishUserLoading();
+      })
+    }
+
     EventBus.$on("showOverlay", () => {
       this.overlay = true;
     });

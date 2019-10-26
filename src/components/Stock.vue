@@ -18,7 +18,7 @@
                   label="Quantity"
                   :color="mainColor"
                   type="number"
-                  :rules="[rules.required]"
+                  :rules="isSellType ? [rules.required, rules.amount] : [rules.required]"
                 ></v-text-field>
               </v-col>
               <v-col cols="4" sm="2" class="px-1" align="center">
@@ -53,7 +53,8 @@ export default {
       count: "",
       currectStockPrice: "",
       rules: {
-        required: value => !!value || "Required."
+        required: v => !!v || "Required.",
+        amount: v => (v && v <= this.stock.count) || "You can not sell more than you have"
       },
       valid: true
     };

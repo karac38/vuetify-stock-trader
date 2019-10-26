@@ -48,7 +48,11 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["endDayAsync"]),
+    ...mapActions([
+      "endDayAsync",
+      "saveUserStocksAsync",
+      "loadUserStocksAsync"
+    ]),
     endDay() {
       EventBus.$emit("showOverlay");
       this.endDayAsync().then(() => {
@@ -57,13 +61,29 @@ export default {
     },
     doAction(item) {
       if (item == "Save Data") {
-        this.snackbar = true;
-        this.snackBarText = "Save Data called";
-        this.color = "warning";
+        this.saveUserStocksAsync()
+          .then(() => {
+            this.snackbar = true;
+            this.snackBarText = "Data saved successfully";
+            this.color = "success";
+          })
+          .catch(err => {
+            this.snackbar = true;
+            this.snackBarText = err;
+            this.color = "error";
+          });
       } else if (item == "Load Data") {
-        this.snackbar = true;
-        this.snackBarText = "Load Data called";
-        this.color = "warning";
+        this.loadUserStocksAsync()
+          .then(() => {
+            this.snackbar = true;
+            this.snackBarText = "Data loaded successfully";
+            this.color = "success";
+          })
+          .catch(err => {
+            this.snackbar = true;
+            this.snackBarText = err;
+            this.color = "error";
+          });
       }
     }
   },

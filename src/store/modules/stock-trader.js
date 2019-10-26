@@ -1,17 +1,21 @@
 import * as types from '../types'
 import numeral from 'numeral'
 import { utilities } from '../utilities'
-//import db from '../db'
+import db from '../db'
 const state = {
-  funds: 10000,
   stocks: [],
   loading: true,
-  userStocks: []
+  userDataLoading: true,
+  userData: {
+    id: '',
+    funds: '',
+    stocks: []
+  }
 }
 
 const getters = {
   getFunds: state => {
-    return numeral(state.funds).format("$0,0.00");
+    return numeral(state.userData.funds).format("$0,0.00");
   }
 }
 
@@ -39,110 +43,113 @@ const actions = {
   },
   getStocksAsync: context => {
     return new Promise((resolve) => {
-      setTimeout(() => {
-        context.state.stocks.push({
-          id: utilities.uuidv4(),
-          name: "BMW",
-          price: 110
+      db.collection("stocks").onSnapshot(res => {
+        const changes = res.docChanges();
+        changes.forEach(change => {
+          if (change.type === "added") {
+            context.state.stocks.push({
+              ...change.doc.data(),
+              id: change.doc.id
+            });
+          }
+          resolve();
         });
-        context.state.stocks.push({
-          id: utilities.uuidv4(),
-          name: "Google",
-          price: 200
-        });
-
-        context.state.stocks.push({
-          id: utilities.uuidv4(),
-          name: "Twitter",
-          price: 110
-        });
-        context.state.stocks.push({
-          id: utilities.uuidv4(),
-          name: "Apple",
-          price: 290
+      });
+    });
+  },
+  getUserStocks: context => {
+    return new Promise(resolve => {
+      db.collection("userData").onSnapshot(res => {
+        const changes = res.docChanges();
+        changes.forEach(change => {
+          if (change.type === "added") {
+            context.state.userData.id = change.doc.id;
+            context.state.userData.stocks = change.doc.data().stocks;
+            context.state.userData.funds = change.doc.data().funds ? change.doc.data().funds : '10000';
+          } else if (change.type === "removed") {
+            var index = context.state.userData.indexOf(s => { s.id == change.doc.id });
+            context.state.userData.splice(index, 1);
+          }
         });
         resolve();
-      }, 3000);
+      });
     });
-
-    // db.collection("stocks").onSnapshot(res => {
-    //   const changes = res.docChanges();
-    //   changes.forEach(change => {
-    //     if (change.type === "added") {
-    //       context.state.stocks.push({
-    //         ...change.doc.data(),
-    //         id: change.doc.id
-    //       });
-    //     } else if (change.type === "removed") {
-    //       var index = context.state.stocks.indexOf((x) => x.id == change.doc.id);
-    //       context.state.stocks.splice(index, 1);
-    //     }
-    //   });
-    // });
   },
   endDayAsync: context => {
     return new Promise((resolve) => {
       let count = context.state.stocks.length;
       context.state.stocks.forEach(element => {
-        setTimeout(() => {
-          let rnd = utilities.getRandomArbitrary(-10, 10);
-          if (element.price + rnd < 0)
-            element.price = 0;
-          element.price += rnd;
-          count--;
-          if (count == 0) {
-            resolve();
-          }
-        }, 1000);
-        // db.collection("stocks")
-        // .doc(this.element.id)
-        // .update(element).then(()=>{count--;})
+        let rnd = utilities.getRandomArbitrary(-10, 10);
+        if (element.price + rnd < 0)
+          element.price = 0;
+        element.price = Number(element.price) + Number(rnd);
+        db.collection("stocks")
+          .doc(element.id)
+          .update(element).then(() => {
+            count = count - 1;
+            if (count == 0) {
+              resolve();
+            }
+          })
       });
     })
   },
-  // loadUserStocks: context => {
-  //   return new Promise((resolve) => {
-  //     db.collection("userData").get().then( snapshot => {
-  //       context.state.userStocks = snapshot;
-        
-  //       snapshot.forEach(doc => {
-  //         console.log(doc.id, '=>', doc.data());
-  //       })
-  //     })
-  //   }) 
-  // },
-  // saveUserStocks: context => {
-
-  // }
+  loadUserStocksAsync: context => {
+    return new Promise((resolve) => {
+      db.collection("userData").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          context.state.userData = doc.data()
+        })
+        resolve();
+      })
+    })
+  },
+  saveUserStocksAsync: context => {
+    new Promise((resolve) => {
+      let id = context.state.userData.id;
+      db.collection("userData").doc(id).update(context.state.userData).then(() => {
+        resolve();
+      })
+    })
+  }
 }
 
 const mutations = {
   [types.BUY_STOCK]: (state, payload) => {
-    if (state.funds - payload.price * payload.count < 0) {
+    if (state.userData.funds - payload.price * payload.count < 0) {
       throw "Not enough funds";
     }
     //current payload count will represent amount of stocks to buy
-    state.funds -= payload.price * payload.count;
-    let currentStockindex = state.userStocks.findIndex(e => e.id == payload.id);
+    state.userData.funds -= payload.price * payload.count;
+
+    let currentStockindex = state.userData.stocks.findIndex(e => e.id == payload.id);
     if (currentStockindex >= 0) {
-      state.userStocks[currentStockindex].count = Number(state.userStocks[currentStockindex].count) + Number(payload.count);
+      state.userData.stocks[currentStockindex].count = Number(state.userData.stocks[currentStockindex].count) + Number(payload.count);
     } else {
-      state.userStocks.push(payload);
+      state.userData.stocks.push(payload);
     }
+    console.log(state.userData);
   },
   [types.SELL_STOCK]: (state, payload) => {
     //current payload count will represent amount of stocks to sell
     let stockIndex = state.stocks.findIndex(e => e.id == payload.id);
-    let userStockIndex = state.userStocks.findIndex(e => e.id == payload.id);
+    let userStockIndex = state.userData.stocks.findIndex(e => e.id == payload.id);
     if (stockIndex < 0 || userStockIndex < 0) {
       throw "Can not find requested stock"
     }
 
-    state.funds += payload.count * state.stocks[stockIndex].price;
-    state.userStocks.splice(userStockIndex, 1);
+    state.userData.funds += payload.count * state.stocks[stockIndex].price;
+    state.userData.stocks[userStockIndex].count -= payload.count;
+    if (state.userData.stocks[userStockIndex].count == 0) {
+      //if count == 0 then remove stock from array
+      state.userData.stocks.splice(userStockIndex, 1);
+    }
   },
   [types.SET_LOADING]: state => {
     state.loading = false;
+  },
+  [types.FINISH_USER_LOADING]: state => {
+    state.userDataLoading = false;
   }
 }
 
