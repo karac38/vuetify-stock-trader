@@ -128,7 +128,6 @@ const mutations = {
     } else {
       state.userData.stocks.push(payload);
     }
-    console.log(state.userData);
   },
   [types.SELL_STOCK]: (state, payload) => {
     //current payload count will represent amount of stocks to sell
