@@ -2,7 +2,7 @@
   <v-container>
     <v-row v-if="!hasStocks">
       <v-col cols="12">
-        <v-card class="ma-10 pa-10" outlined tile>
+        <v-card class="ma-8 pa-10" outlined tile>
           <v-card-title class="display-1 overlap">No stocks purchased</v-card-title>
           <hr />
           <v-card-text>
@@ -24,12 +24,11 @@ export default {
   computed: {
     ...mapGetters(["getFunds"]),
     hasStocks() {
-      if (this.$store.state.stock.userDataLoading) 
-        return false;
+      if (this.$store.state.stock.userDataLoading) return false;
       return this.$store.state.stock.userData.stocks.length > 0;
     },
-    userStocks(){
-      return this.$store.state.stock.userData.stocks
+    userStocks() {
+      return this.$store.state.stock.userData.stocks;
     }
   },
   components: {
@@ -37,3 +36,8 @@ export default {
   }
 };
 </script>
+<style scoped>
+div.overlap {
+  word-break: break-word;
+}
+</style>
