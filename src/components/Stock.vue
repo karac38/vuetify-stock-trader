@@ -1,7 +1,7 @@
 <template>
   <v-col cols="12" md="6">
     <v-card>
-      <v-card-title :class="mainColor + ' white--text headline'">
+      <v-card-title :class="mainColor + ' font-weight-bold white--text headline'">
         <div>{{stock.name}}</div>
       </v-card-title>
       <v-card-subtitle :class="mainColor + ' font-weight-bold subtitle-2 white--text'">
@@ -16,21 +16,21 @@
                 <v-text-field
                   v-model="count"
                   label="Quantity"
-                  :color="mainColor"
+                  color="grey darken-3"
                   type="number"
-                  :rules="isSellType ? [rules.required, rules.amount] : [rules.required]"
+                  :rules="isSellType ? [rules.required, rules.amount, rules.isInteger] : [rules.required, rules.isInteger]"
                 ></v-text-field>
               </v-col>
               <v-col cols="4" sm="2" class="px-1" align="center">
                 <v-btn
                   v-if="isBuyType"
-                  @click="buyStocks(userStock)"
+                  @click.stop="buyStocks(userStock)"
                   :color="mainColor + ' white--text'"
                   :disabled="!valid"
                 >Buy</v-btn>
                 <v-btn
                   v-else-if="isSellType"
-                  @click="sellStocks(userStock)"
+                  @click.stop="sellStocks(userStock)"
                   :color="mainColor + ' white--text'"
                   :disabled="!valid"
                 >Sell</v-btn>
@@ -54,7 +54,8 @@ export default {
       currectStockPrice: "",
       rules: {
         required: v => !!v || "Required.",
-        amount: v => (v && v <= this.stock.count) || "You can not sell more than you have"
+        amount: v => (v && Number(v) <= Number(this.stock.count) ) || "You can not sell more than you have",
+        isInteger: v => (v && Number.isInteger(Number(v)) && Number(v) > 0) || "The value must be a positive integer number"
       },
       valid: true
     };
@@ -67,7 +68,7 @@ export default {
       return this.type === "sell";
     },
     mainColor() {
-      let color = "green";
+      let color = "green accent-1 green--text";
       if (this.isSellType) {
         color = "primary";
       }

@@ -16,19 +16,28 @@ const state = {
 const getters = {
   getFunds: state => {
     return numeral(state.userData.funds).format("$0,0.00");
+  },
+  getStocks: state => {
+    return state.stocks;
+  },
+  userStocks: state => {
+    return state.userData.stocks;
+  },
+  getLoading: state => {
+    return state.loading;
   }
 }
 
 const actions = {
-  buyStocksAsync({ commit }, payload) {
+  buyStocksAsync({ commit }, stock) {
     return new Promise((resolve) => {
-      commit(types.BUY_STOCK, payload);
+      commit(types.BUY_STOCK, stock);
       resolve();
     })
   },
-  sellStocksAsync({ commit }, payload) {
+  sellStocksAsync({ commit }, stock) {
     return new Promise((resolve) => {
-      commit(types.SELL_STOCK, payload);
+      commit(types.SELL_STOCK, stock);
       resolve();
     })
   },
@@ -80,7 +89,7 @@ const actions = {
       let count = context.state.stocks.length;
       context.state.stocks.forEach(element => {
         let rnd = utilities.getRandomArbitrary(-10, 10);
-        if (element.price + rnd < 0)
+        if (Number(element.price) + Number(rnd) < 0)
           element.price = 0;
         element.price = Number(element.price) + Number(rnd);
         db.collection("stocks")

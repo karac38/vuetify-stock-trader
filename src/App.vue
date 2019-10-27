@@ -14,7 +14,7 @@
 
 <script>
 import AppNavBar from "./components/AppNavBar";
-import { mapActions, mapMutations } from "vuex";
+import { mapActions, mapMutations, mapGetters } from "vuex";
 import * as types from "./store/types";
 import { EventBus } from "./eventbus";
 
@@ -22,6 +22,9 @@ export default {
   name: "App",
   components: {
     appNavBar: AppNavBar
+  },
+  computed:{
+    ...mapGetters(["getStocks", "userStocks"])
   },
   methods: {
     ...mapActions(["getStocksAsync", "getUserStocks"]),
@@ -38,18 +41,18 @@ export default {
       this.overlay = val;
     }
   },
-  mounted() {
+  created() {
     if (
-      !this.$store.state.stock.stocks ||
-      this.$store.state.stock.stocks.length == 0
+      !this.getStocks ||
+      this.getStocks.length == 0
     ) {
       this.getStocksAsync().then(() => {
         this.finishLoading();
       });
     }
     if (
-      !this.$store.state.stock.userStocks ||
-      this.$store.state.stock.userStocks.stocks.length == 0
+      !this.userStocks ||
+      this.userStocks.length == 0
     ){
       this.getUserStocks().then(()=>{
         this.finishUserLoading();

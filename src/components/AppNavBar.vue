@@ -4,19 +4,23 @@
       {{ snackBarText }}
       <v-btn color="white" text @click="snackbar = false">Close</v-btn>
     </v-snackbar>
-    <router-link
-      to="/"
-      tag="span"
-      :style="{ cursor: 'pointer'}"
-      class="headline text-uppercase"
-    >Stock Trader</router-link>
-    <v-btn text tile class="mx-3" router to="/portfolio">Portfolio</v-btn>
-    <v-btn text tile router to="/stocks">Stocks</v-btn>
+    <v-toolbar-title>
+      <router-link
+        to="/"
+        tag="span"
+        :style="{ cursor: 'pointer'}"
+        class="headline text-uppercase"
+      >Stock Trader</router-link>
+    </v-toolbar-title>
+    <v-toolbar-items>
+      <v-btn text tile router to="/portfolio">Portfolio</v-btn>
+      <v-btn text tile router to="/stocks">Stocks</v-btn>
+    </v-toolbar-items>
     <v-spacer></v-spacer>
-    <v-btn text @click="endDay" :disabled="loading">End Day</v-btn>
+    <v-btn text @click="endDay" :disabled="getLoading">End Day</v-btn>
     <v-menu offset-y>
       <template v-slot:activator="{ on }">
-        <v-btn text v-on="on">
+        <v-btn icon v-on="on">
           <v-icon>mdi-dots-vertical</v-icon>
         </v-btn>
       </template>
@@ -42,10 +46,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getFunds"]),
-    loading() {
-      return this.$store.state.stock.loading;
-    }
+    ...mapGetters(["getFunds", "getLoading"])
   },
   methods: {
     ...mapActions([
